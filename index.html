@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Plastic Collapse - Una experiencia narrativa sobre el colapso ambiental">
-    <title>Plastic Collapse</title>
+    <title>Plastic Collapse - A Narrative Game</title>
     
     <!-- Phaser 3 Framework -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/phaser/3.55.2/phaser.min.js"></script>
@@ -18,28 +18,62 @@
     
     <!-- Scripts en ORDEN CORRECTO DE DEPENDENCIAS -->
     
-    <!-- NIVEL 1: Configuración base (sin dependencias) -->
-    <script src="js/config.js"></script>
+    <!-- NIVEL 1: Configuración base y utilidades sin dependencias -->
+    <script src="src/utils/Constants.js"></script>
+    <script src="src/utils/ColorPalette.js"></script>
+    <script src="src/utils/AssetLoader.js"></script>
+    <script src="src/utils/TweenHelper.js"></script>
     
-    <!-- NIVEL 2: Constantes (depende de config.js) -->
-    <script src="js/constants.js"></script>
+    <!-- NIVEL 2: Sistemas de eventos (base para todo lo demás) -->
+    <script src="src/systems/EventBus.js"></script>
     
-    <!-- NIVEL 3: Utilidades (dependen de config.js) -->
-    <script src="js/assetLoader.js"></script>
-    <script src="js/worldState.js"></script>
-    <script src="js/mapGenerator.js"></script>
+    <!-- NIVEL 3: Sistemas globales -->
+    <script src="src/systems/GameState.js"></script>
+    <script src="src/systems/SaveSystem.js"></script>
+    <script src="src/systems/TransitionManager.js"></script>
+    <script src="src/systems/DialogueSystem.js"></script>
+    <script src="src/systems/HUDManager.js"></script>
     
-    <!-- NIVEL 4: Clases de entidades (dependen de config.js) -->
-    <script src="js/player.js"></script>
-    <script src="js/npc.js"></script>
-    <script src="js/dialogue.js"></script>
+    <!-- NIVEL 4: Data (dialogues, sprites, stage data) -->
+    <script src="src/data/spriteManifest.js"></script>
+    <script src="src/data/dialogues.js"></script>
+    <script src="src/data/stageData.js"></script>
     
-    <!-- NIVEL 5: Escenas (dependen de todo lo anterior) -->
-    <script src="js/scenes/BootScene.js"></script>
-    <script src="js/scenes/PreloadScene.js"></script>
-    <script src="js/scenes/MainScene.js"></script>
+    <!-- NIVEL 5: Entidades (Player, NPC, etc) -->
+    <script src="src/entities/Player.js"></script>
+    <script src="src/entities/NPC.js"></script>
+    <script src="src/entities/Scientist.js"></script>
+    <script src="src/entities/Businessman.js"></script>
+    <script src="src/entities/AnimalNPC.js"></script>
+    <script src="src/entities/EnvironmentObject.js"></script>
     
-    <!-- NIVEL 6: Inicializador principal (último) -->
-    <script src="main.js"></script>
+    <!-- NIVEL 6: UI Components -->
+    <script src="src/ui/HUD.js"></script>
+    <script src="src/ui/DialogueBox.js"></script>
+    <script src="src/ui/MainMenu.js"></script>
+    <script src="src/ui/EndScreen.js"></script>
+    
+    <!-- NIVEL 7: Escenas -->
+    <script src="src/scenes/BaseStageScene.js"></script>
+    <script src="src/scenes/BootScene.js"></script>
+    <script src="src/scenes/PreloadScene.js"></script>
+    <script src="src/scenes/MainMenuScene.js"></script>
+    
+    <!-- Todas las 8 etapas -->
+    <script src="src/scenes/Stage1_NaturalWorld.js"></script>
+    <script src="src/scenes/Stage2_Factory.js"></script>
+    <script src="src/scenes/Stage3_Warning.js"></script>
+    <script src="src/scenes/Stage4_Consequences.js"></script>
+    <script src="src/scenes/Stage5_SocialImpact.js"></script>
+    <script src="src/scenes/Stage6_War.js"></script>
+    <script src="src/scenes/Stage7_Animals.js"></script>
+    <script src="src/scenes/Stage8_FinalWorld.js"></script>
+    
+    <!-- Pantalla final -->
+    <script src="src/scenes/EndScene.js"></script>
+    
+    <!-- Configuración y main (ÚLTIMO) -->
+    <script src="src/config/GameConfig.js"></script>
+    <script src="src/main.js"></script>
 </body>
 </html>
