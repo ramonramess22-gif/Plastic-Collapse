@@ -1,86 +1,132 @@
 /**
- * @file MainMenuScene.js
- * @description Escena del menú principal.
- * Delega la construcción DOM a ui/MainMenu.js.
- *
- * SEGURIDAD: Sin eval(), sin innerHTML con datos externos. Compatible con CSP strict.
+ * PLASTIC COLLAPSE - MAIN MENU SCENE
+ * Menú principal del juego
  */
 
-import MainMenu   from '../ui/MainMenu.js';
-import SaveSystem from '../systems/SaveSystem.js';
-import GameState  from '../systems/GameState.js';
-import { STAGES, GAME } from '../utils/Constants.js';
-
-export default class MainMenuScene extends Phaser.Scene {
-
-  constructor() {
-    super({ key: STAGES.MAIN_MENU });
-    this._menu = null;
-  }
-
-  create() {
-    this.cameras.main.setBackgroundColor(0x0a100a);
-
-    // Fade out del overlay negro
-    const overlay = document.getElementById('scene-transition');
-    if (overlay) {
-      overlay.classList.remove('fade-in');
-      overlay.classList.add('fade-out');
+class MainMenuScene extends Phaser.Scene {
+    constructor() {
+        super({ key: 'MainMenuScene' });
     }
 
-    const meta       = SaveSystem.getSaveMetadata();
-    const saveDateStr = meta.savedAt
-      ? meta.savedAt.toLocaleDateString('es-EC')
-      : '';
+    create() {
+        const width = this.cameras.main.width;
+        const height = this.cameras.main.height;
 
-    this._menu = new MainMenu({
-      containerId: 'main-menu-overlay',
-      hasSave:     SaveSystem.hasSave(),
-      saveDate:    saveDateStr,
-      gameTitle:   GAME.TITLE,
-      gameVersion: GAME.VERSION,
+        // Fondo
+        this.cameras.main.setBackgroundColor(0x1a1a1a);
 
-      onStart: () => {
-        SaveSystem.resetSave();
-        GameState.startGame();
-        this._closeAndGo(STAGES.STAGE_1);
-      },
+        // Título
+        const title = this.add.text(
+            width / 2,
+            height / 4,
+            'PLASTIC COLLAPSE',
+            {
+                fontSize: '48px',
+                fill: '#ff0000',
+                fontFamily: 'Arial',
+                fontStyle: 'bold'
+            }
+        );
+        title.setOrigin(0.5);
 
-      onContinue: () => {
-        if (SaveSystem.load()) {
-          GameState.startGame();
-          this._closeAndGo(GameState.getCurrentStage());
-        }
-      },
+        // Subtítulo
+        const subtitle = this.add.text(
+            width / 2,
+            height / 4 + 60,
+            'Un viaje narrativo sobre el colapso ambiental',
+            {
+                fontSize: '16px',
+                fill: '#cccccc',
+                fontFamily: 'Arial'
+            }
+        );
+        subtitle.setOrigin(0.5);
 
-      onMusicToggle: (enabled) => {
-        if (enabled) {
-          this.sound?.resumeAll();
-        } else {
-          this.sound?.pauseAll();
-        }
-      },
+        // Botón Jugar
+        const playButton = this.add.text(
+            width / 2,
+            height / 2,
+            '[ JUGAR ]',
+            {
+                fontSize: '24px',
+                fill: '#00ff00',
+                fontFamily: 'Arial',
+                backgroundColor: '#1a3a1a',
+                padding: { x: 20, y: 10 }
+            }
+        );
+        playButton.setOrigin(0.5);
+        playButton.setInteractive();
+        playButton.on('pointerover', () => playButton.setFill('#ffff00'));
+        playButton.on('pointerout', () => playButton.setFill('#00ff00'));
+        playButton.on('pointerdown', () => {
+            this.scene.start(CONSTANTS.STAGES[1]);
+        });
 
-      onSfxToggle: (enabled) => {
-        // Se puede expandir con un volumen global de SFX
-        console.info('[MainMenu] SFX:', enabled);
-      },
-    });
+        // Botón Controles
+        const controlsButton = this.add.text(
+            width / 2,
+            height / 2 + 60,
+            '[ CONTROLES ]',
+            {
+                fontSize: '18px',
+                fill: '#00ccff',
+                fontFamily: 'Arial'
+            }
+        );
+        controlsButton.setOrigin(0.5);
+        controlsButton.setInteractive();
+        controlsButton.on('pointerdown', () => {
+            this.showControls();
+        });
 
-    this._menu.show();
-  }
-
-  _closeAndGo(sceneKey) {
-    if (this._menu) {
-      this._menu.hide();
+        // Info
+        const info = this.add.text(
+            width / 2,
+            height - 40,
+            'Una reflexión sobre cómo las decisiones pequeñas llevan al colapso irreversible',
+            {
+                fontSize: '12px',
+                fill: '#666666',
+                fontFamily: 'Arial',
+                align: 'center',
+                wordWrap: { width: width - 40 }
+            }
+        );
+        info.setOrigin(0.5);
     }
-    this.scene.start(sceneKey);
-  }
 
-  shutdown() {
-    if (this._menu) {
-      this._menu.destroy();
-      this._menu = null;
+    /**
+     * Mostrar controles
+     */
+    showControls() {
+        const width = this.cameras.main.width;
+        const height = this.cameras.main.height;
+
+        const controlsText = this.add.text(
+            width / 2,
+            height / 2,
+            'CONTROLES\n\n' +
+            'Flechas: Moverse\n' +
+            'E: Interactuar / Siguiente diálogo\n' +
+            '\nPresiona cualquier tecla para volver',
+            {
+                fontSize: '18px',
+                fill: '#ffffff',
+                fontFamily: 'Arial',
+                align: 'center',
+                backgroundColor: '#2c3e50',
+                padding: { x: 30, y: 30 }
+            }
+        );
+        controlsText.setOrigin(0.5);
+
+        this.input.keyboard.once('keydown', () => {
+            controlsText.destroy();
+        });
     }
-  }
+}
+
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = MainMenuScene;
 }
