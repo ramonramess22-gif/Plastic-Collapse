@@ -1,22 +1,23 @@
 /**
  * PLASTIC COLLAPSE - BOOT SCENE
- * Inicialización técnica del juego
+ * Escena inicial de boot - Carga configuración y inicializa sistema
  */
 
 class BootScene extends Phaser.Scene {
     constructor() {
-        super({ key: 'BootScene' });
+        super({ key: 'BootScene', active: true });
     }
 
     preload() {
-        console.log('⚙️ Inicializando Plastic Collapse...');
+        // Cargar assets mínimos para el boot
+        console.log('🔧 BOOT: Inicializando sistema...');
     }
 
     create() {
         // Inicializar sistemas globales
-        console.log('✅ Sistemas globales inicializados');
-
-        // Pasar a PreloadScene
+        console.log('✓ Sistemas globales inicializados');
+        
+        // Ir a preload
         this.scene.start('PreloadScene');
     }
 }
