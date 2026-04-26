@@ -1,134 +1,159 @@
 /**
- * @file NPC.js
- * @description Clase base para todos los NPCs del juego.
- *
- * Scientist, Businessman, AnimalNPC extienden esta clase.
- * Provee: sprite, animación idle, rango de interacción, diálogo.
- *
- * SEGURIDAD:
- *   - Sin eval(), sin new Function().
- *   - dialogueKey es sólo un string para lookup en DIALOGUES — nunca se ejecuta.
- *   - Compatible con CSP strict.
+ * PLASTIC COLLAPSE - NPC BASE CLASS
+ * Base para todos los NPCs del juego
  */
 
-import DialogueSystem from '../systems/DialogueSystem.js';
-import { DIALOGUES }  from '../data/dialogues.js';
-import { DEPTHS }     from '../utils/Constants.js';
+class NPC {
+    constructor(scene, x, y, npcType = 'generic') {
+        this.scene = scene;
+        this.gridX = Math.floor(x / CONSTANTS.TILE_SIZE);
+        this.gridY = Math.floor(y / CONSTANTS.TILE_SIZE);
+        this.npcType = npcType;
+        this.dialogueKey = null;
+        this.isMoving = false;
+        this.currentDirection = CONSTANTS.DIRECTIONS.DOWN;
+        this.moveTimer = 0;
+        this.moveInterval = Phaser.Math.Between(2000, 5000);
 
-/**
- * Resuelve una ruta de diálogo como 'scientist.stage3_warning_intro'
- * en el objeto de líneas correspondiente.
- *
- * SEGURIDAD: Usa split('.') y acceso por clave sobre el objeto DIALOGUES —
- * nunca eval() ni new Function(). Si la clave no existe, devuelve null.
- *
- * @param {string} key - Ruta con puntos: 'grupo.subkey'
- * @returns {string[]|null}
- */
-function resolveDialogueKey(key) {
-  if (!key || typeof key !== 'string') return null;
+        // Crear sprite
+        this.sprite = scene.add.sprite(x, y, `npc_${npcType}_placeholder`);
+        this.sprite.setScale(1);
+        this.sprite.setDepth(CONSTANTS.DEPTHS.NPCs);
 
-  const parts = key.split('.');
-  if (parts.length !== 2) return null;
-
-  const [group, subkey] = parts;
-
-  // Acceso explícito en dos pasos — sin eval
-  const groupObj = DIALOGUES[group];
-  if (!groupObj) return null;
-
-  const lines = groupObj[subkey];
-  if (!Array.isArray(lines)) return null;
-
-  return lines;
-}
-
-export default class NPC {
-
-  /**
-   * @param {Phaser.Scene} scene
-   * @param {Object}       config
-   * @param {number}       config.x
-   * @param {number}       config.y
-   * @param {string}       config.textureKey    - Clave del spritesheet idle
-   * @param {string}       config.idleAnim      - Clave de la animación idle
-   * @param {string}       [config.talkAnim]    - Clave de la animación al hablar
-   * @param {string}       [config.dialogueKey] - Ruta 'grupo.subkey' en DIALOGUES
-   * @param {string}       [config.speakerName] - Nombre que aparece en la caja de diálogo
-   * @param {number}       [config.depth]       - Depth de renderizado
-   */
-  constructor(scene, config) {
-    this.scene       = scene;
-    this._config     = config;
-    this._idleAnim   = config.idleAnim   ?? null;
-    this._talkAnim   = config.talkAnim   ?? config.idleAnim ?? null;
-    this.speakerName = config.speakerName ?? 'NPC';
-
-    // Resolver las líneas de diálogo una sola vez al crear el NPC
-    this._dialogueLines = resolveDialogueKey(config.dialogueKey ?? null);
-
-    // Crear el sprite
-    this.sprite = scene.physics.add.staticSprite(
-      config.x,
-      config.y,
-      config.textureKey
-    );
-    this.sprite.setDepth(config.depth ?? DEPTHS.NPC_BELOW);
-
-    // Reproducir animación idle si existe
-    if (this._idleAnim && scene.anims.exists(this._idleAnim)) {
-      this.sprite.play(this._idleAnim);
-    }
-  }
-
-  // ─── INTERACCIÓN ─────────────────────────────────────────────────────────────
-
-  /**
-   * Lanzar el diálogo asociado al NPC.
-   * Llamado desde Player._handleInteraction() al presionar E.
-   */
-  interact() {
-    if (!this._dialogueLines || this._dialogueLines.length === 0) return;
-    if (DialogueSystem.isActive()) return;
-
-    // Cambiar a animación de hablar
-    if (this._talkAnim && this.scene.anims.exists(this._talkAnim)) {
-      this.sprite.play(this._talkAnim);
+        // Indicador de interacción
+        this.interactionRange = CONSTANTS.INTERACTION_DISTANCE;
+        this.createInteractionIndicator();
     }
 
-    DialogueSystem.start(
-      this.speakerName,
-      this._dialogueLines,
-      () => this._onDialogueEnd()
-    );
-  }
-
-  /**
-   * Callback al terminar el diálogo — vuelve a idle.
-   */
-  _onDialogueEnd() {
-    if (this._idleAnim && this.scene.anims.exists(this._idleAnim)) {
-      this.sprite.play(this._idleAnim);
+    /**
+     * Crear indicador visual de que se puede interactuar
+     */
+    createInteractionIndicator() {
+        this.indicator = this.scene.add.graphics();
+        this.indicator.fillStyle(0xf39c12, 0.5);
+        this.indicator.fillCircle(0, 0, 4);
+        this.indicator.setDepth(CONSTANTS.DEPTHS.OBJECTS);
+        this.indicator.setPosition(this.sprite.x, this.sprite.y - 20);
     }
-  }
 
-  // ─── DISTANCIA ───────────────────────────────────────────────────────────────
+    /**
+     * Establecer diálogo para este NPC
+     * @param {string} dialogueKey - Clave del diálogo
+     */
+    setDialogue(dialogueKey) {
+        this.dialogueKey = dialogueKey;
+    }
 
-  /**
-   * Distancia euclídea al jugador.
-   * @param {number} playerX
-   * @param {number} playerY
-   * @returns {number}
-   */
-  distanceTo(playerX, playerY) {
-    const dx = this.sprite.x - playerX;
-    const dy = this.sprite.y - playerY;
-    return Math.sqrt(dx * dx + dy * dy);
-  }
+    /**
+     * Actualizar NPC cada frame
+     */
+    update() {
+        // Movimiento natural
+        this.moveTimer++;
+        if (this.moveTimer > this.moveInterval && !this.isMoving) {
+            this.moveRandomly();
+            this.moveTimer = 0;
+            this.moveInterval = Phaser.Math.Between(2000, 5000);
+        }
 
-  // ─── LIMPIEZA ─────────────────────────────────────────────────────────────────
+        // Actualizar indicador
+        if (this.indicator) {
+            this.indicator.setPosition(this.sprite.x, this.sprite.y - 20);
+        }
+    }
 
-  destroy() {
-    this.sprite.destroy();
-  }
+    /**
+     * Mover aleatoriamente
+     */
+    moveRandomly() {
+        const directions = [
+            CONSTANTS.DIRECTIONS.UP,
+            CONSTANTS.DIRECTIONS.DOWN,
+            CONSTANTS.DIRECTIONS.LEFT,
+            CONSTANTS.DIRECTIONS.RIGHT
+        ];
+
+        const randomDirection = Phaser.Utils.Array.GetRandom(directions);
+        const oldX = this.gridX;
+        const oldY = this.gridY;
+
+        switch (randomDirection) {
+            case CONSTANTS.DIRECTIONS.UP:
+                this.gridY -= 1;
+                break;
+            case CONSTANTS.DIRECTIONS.DOWN:
+                this.gridY += 1;
+                break;
+            case CONSTANTS.DIRECTIONS.LEFT:
+                this.gridX -= 1;
+                break;
+            case CONSTANTS.DIRECTIONS.RIGHT:
+                this.gridX += 1;
+                break;
+        }
+
+        // Validar posición
+        if (!this.isValidPosition(this.gridX, this.gridY)) {
+            this.gridX = oldX;
+            this.gridY = oldY;
+            return;
+        }
+
+        this.currentDirection = randomDirection;
+        this.isMoving = true;
+
+        // Animar movimiento
+        this.scene.tweens.add({
+            targets: this.sprite,
+            x: this.gridX * CONSTANTS.TILE_SIZE,
+            y: this.gridY * CONSTANTS.TILE_SIZE,
+            duration: CONSTANTS.PLAYER_SPEED,
+            ease: 'Linear',
+            onComplete: () => {
+                this.isMoving = false;
+            }
+        });
+    }
+
+    /**
+     * Verificar si posición es válida
+     * @param {number} gridX
+     * @param {number} gridY
+     * @returns {boolean}
+     */
+    isValidPosition(gridX, gridY) {
+        const mapWidth = 25;
+        const mapHeight = 18;
+        return gridX >= 0 && gridX < mapWidth && gridY >= 0 && gridY < mapHeight;
+    }
+
+    /**
+     * Mostrar/ocultar indicador de interacción
+     * @param {boolean} visible
+     */
+    setInteractionIndicatorVisible(visible) {
+        if (this.indicator) {
+            this.indicator.setVisible(visible);
+        }
+    }
+
+    /**
+     * Obtener diálogo
+     * @returns {string|null}
+     */
+    getDialogueKey() {
+        return this.dialogueKey;
+    }
+
+    /**
+     * Destruir NPC
+     */
+    destroy() {
+        if (this.sprite) {
+            this.sprite.destroy();
+        }
+        if (this.indicator) {
+            this.indicator.destroy();
+        }
+    }
 }

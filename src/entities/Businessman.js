@@ -1,40 +1,59 @@
 /**
- * @file Businessman.js
- * @description NPC del empresario que ignora las advertencias.
- * Etapas 2, 3 y 5.
+ * PLASTIC COLLAPSE - BUSINESSMAN
+ * NPC especialista: Empresario que ignora el problema
  */
 
-import NPC    from './NPC.js';
-import { DEPTHS } from '../utils/Constants.js';
-
-export class Businessman extends NPC {
-  constructor(scene, config) {
-    super(scene, {
-      textureKey:   'businessman_idle',
-      idleAnim:     'businessman_idle_anim',
-      speakerName:  config.speakerName ?? 'CEO Vargas',
-      depth:        DEPTHS.NPC_BELOW,
-      ...config,
-    });
-
-    // Tint gris-verde — dinero, frialdad
-    this.sprite.setTint(0xbbddbb);
-  }
-
-  /**
-   * Al interactuar, el empresario reproduce la animación de rechazo
-   * y luego vuelve a idle — no cambia a talk.
-   */
-  interact() {
-    if (this.scene.anims.exists('businessman_reject_anim')) {
-      this.sprite.play('businessman_reject_anim');
-      this.sprite.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
-        if (this.scene.anims.exists(this._idleAnim)) {
-          this.sprite.play(this._idleAnim);
-        }
-      });
+class Businessman extends NPC {
+    constructor(scene, x, y) {
+        super(scene, x, y, 'businessman');
+        this.profitLevel = 100; // Aumenta con contaminación
+        this.stage = GAME_STATE.currentStage;
     }
 
-    super.interact();
-  }
+    /**
+     * Actualizar según etapa
+     */
+    update() {
+        super.update();
+
+        const currentStage = GAME_STATE.currentStage;
+        if (currentStage !== this.stage) {
+            this.updateProfitState(currentStage);
+            this.stage = currentStage;
+        }
+    }
+
+    /**
+     * Actualizar nivel de ganancias
+     * @param {number} stage
+     */
+    updateProfitState(stage) {
+        this.profitLevel = Math.min(100, stage * 12);
+        // Cambiar color añadiendo verde (dinero)
+        const greenTint = Math.floor(0x00ff00 * (this.profitLevel / 100));
+        this.sprite.setTint(0xffffff);
+    }
+
+    /**
+     * Obtener diálogo según etapa
+     * @returns {string}
+     */
+    getDialogueByStage() {
+        const stage = GAME_STATE.currentStage;
+        const dialogueMap = {
+            1: 'stage1_businessman_welcome',
+            2: 'stage2_businessman_opportunity',
+            3: 'stage3_businessman_dismissal',
+            4: 'stage4_businessman_denial',
+            5: 'stage5_businessman_conflict',
+            6: 'stage6_businessman_war',
+            7: 'stage7_businessman_empty',
+            8: 'stage8_businessman_final'
+        };
+        return dialogueMap[stage] || null;
+    }
+}
+
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = Businessman;
 }

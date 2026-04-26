@@ -1,24 +1,67 @@
 /**
- * @file Scientist.js
- * @description NPC del científico que advierte sobre el daño del plástico.
- * Etapa 3 y 7. Tiene diálogos extendidos y cambia de tint según la etapa.
+ * PLASTIC COLLAPSE - SCIENTIST
+ * NPC especialista: Científico que advierte sobre el colapso
  */
 
-import NPC    from './NPC.js';
-import { DEPTHS } from '../utils/Constants.js';
+class Scientist extends NPC {
+    constructor(scene, x, y) {
+        super(scene, x, y, 'scientist');
+        this.hasWarnedPlayer = false;
+        this.emotionalState = 'normal'; // normal, worried, desperate
+        this.stage = GAME_STATE.currentStage;
+    }
 
-export class Scientist extends NPC {
-  constructor(scene, config) {
-    super(scene, {
-      textureKey:   'scientist_idle',
-      idleAnim:     'scientist_idle_anim',
-      talkAnim:     'scientist_talk_anim',
-      speakerName:  config.speakerName ?? 'Dr. García',
-      depth:        DEPTHS.NPC_ABOVE,
-      ...config,
-    });
+    /**
+     * Actualizar estado del científico según la etapa
+     */
+    update() {
+        super.update();
 
-    // Ligero tint azulado — identidad visual del científico
-    this.sprite.setTint(0xccddff);
-  }
+        // Cambiar expresión según etapa
+        const currentStage = GAME_STATE.currentStage;
+        if (currentStage !== this.stage) {
+            this.updateEmotionalState(currentStage);
+            this.stage = currentStage;
+        }
+    }
+
+    /**
+     * Actualizar estado emocional
+     * @param {number} stage
+     */
+    updateEmotionalState(stage) {
+        if (stage <= 2) {
+            this.emotionalState = 'normal';
+        } else if (stage <= 4) {
+            this.emotionalState = 'worried';
+            // Cambiar tinte
+            this.sprite.setTint(0xff9999);
+        } else {
+            this.emotionalState = 'desperate';
+            this.sprite.setTint(0xff0000);
+        }
+    }
+
+    /**
+     * Obtener diálogo según etapa
+     * @returns {string}
+     */
+    getDialogueByStage() {
+        const stage = GAME_STATE.currentStage;
+        const dialogueMap = {
+            1: 'stage1_scientist_observation',
+            2: 'stage2_scientist_first_data',
+            3: 'stage3_scientist_warning',
+            4: 'stage4_scientist_desperate',
+            5: 'stage5_scientist_final_plea',
+            6: 'stage6_scientist_silence',
+            7: 'stage7_scientist_regret',
+            8: 'stage8_scientist_reflection'
+        };
+        return dialogueMap[stage] || null;
+    }
+}
+
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = Scientist;
 }

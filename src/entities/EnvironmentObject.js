@@ -1,58 +1,91 @@
 /**
- * @file EnvironmentObject.js
- * @description Objeto interactuable del entorno (bombas de petróleo, tanques, etc.)
- * Al interactuar, muestra un diálogo del narrador.
+ * PLASTIC COLLAPSE - ENVIRONMENT OBJECT
+ * Objetos ambientales que cambian según la etapa
  */
 
-import DialogueSystem from '../systems/DialogueSystem.js';
-import { DIALOGUES }  from '../data/dialogues.js';
-import { DEPTHS }     from '../utils/Constants.js';
+class EnvironmentObject {
+    constructor(scene, x, y, objectType = 'tree') {
+        this.scene = scene;
+        this.gridX = Math.floor(x / CONSTANTS.TILE_SIZE);
+        this.gridY = Math.floor(y / CONSTANTS.TILE_SIZE);
+        this.objectType = objectType;
+        this.stage = GAME_STATE.currentStage;
+        this.health = 100;
 
-export default class EnvironmentObject {
-  /**
-   * @param {Phaser.Scene} scene
-   * @param {Object}       config
-   * @param {number}       config.x
-   * @param {number}       config.y
-   * @param {string}       config.textureKey
-   * @param {string}       config.dialogueKey  - 'narrator.stage2_process'
-   * @param {string}       [config.label]      - Texto del indicador de interacción
-   */
-  constructor(scene, config) {
-    this.scene = scene;
+        // Crear sprite
+        this.sprite = scene.add.sprite(x, y, `env_${objectType}_placeholder`);
+        this.sprite.setDepth(CONSTANTS.DEPTHS.OBJECTS);
+        this.updateAppearance();
+    }
 
-    this.sprite = scene.physics.add.staticImage(
-      config.x, config.y, config.textureKey
-    );
-    this.sprite.setDepth(config.depth ?? DEPTHS.ENVIRONMENT);
+    /**
+     * Actualizar apariencia según etapa
+     */
+    update() {
+        const currentStage = GAME_STATE.currentStage;
+        if (currentStage !== this.stage) {
+            this.stage = currentStage;
+            this.updateAppearance();
+        }
+    }
 
-    // Resolver diálogo — nunca eval(), acceso por claves estáticas
-    this._label = config.label ?? '';
-    this._dialogueLines = this._resolveDialogue(config.dialogueKey);
-  }
+    /**
+     * Actualizar apariencia visual
+     */
+    updateAppearance() {
+        const stage = this.stage;
+        const health = Math.max(0, 100 - (stage * 12));
 
-  _resolveDialogue(key) {
-    if (!key || typeof key !== 'string') return null;
-    const [group, subkey] = key.split('.');
-    const groupObj = DIALOGUES[group];
-    if (!groupObj) return null;
-    const lines = groupObj[subkey];
-    return Array.isArray(lines) ? lines : null;
-  }
+        // Cambiar color progresivamente
+        if (health > 75) {
+            this.sprite.setTint(0xffffff); // Normal
+        } else if (health > 50) {
+            this.sprite.setTint(0xccaa44); // Amarillento
+        } else if (health > 25) {
+            this.sprite.setTint(0x996633); // Marrón
+        } else if (health > 0) {
+            this.sprite.setTint(0x666666); // Gris
+        } else {
+            this.sprite.setTint(0x333333); // Casi negro
+            this.sprite.setAlpha(0.5);
+        }
 
-  interact() {
-    if (!this._dialogueLines) return;
-    if (DialogueSystem.isActive()) return;
-    DialogueSystem.start('', this._dialogueLines);
-  }
+        // Cambiar escala (marchitarse)
+        const scaleReduction = 1 - ((100 - health) / 100) * 0.3;
+        this.sprite.setScale(scaleReduction);
+    }
 
-  distanceTo(px, py) {
-    const dx = this.sprite.x - px;
-    const dy = this.sprite.y - py;
-    return Math.sqrt(dx * dx + dy * dy);
-  }
+    /**
+     * Aplicar daño ambiental
+     * @param {number} damage
+     */
+    takeDamage(damage = 10) {
+        this.health = Math.max(0, this.health - damage);
+        this.updateAppearance();
+    }
 
-  destroy() {
-    this.sprite.destroy();
-  }
+    /**
+     * Obtener salud del objeto
+     * @returns {number}
+     */
+    getHealth() {
+        return this.health;
+    }
+
+    /**
+     * Verificar si sigue vivo
+     * @returns {boolean}
+     */
+    isAlive() {
+        return this.health > 0;
+    }
+
+    /**
+     * Destruir objeto
+     */
+    destroy() {
+        if (this.sprite) {
+            this.sprite.destroy();
+        }
+    }
 }

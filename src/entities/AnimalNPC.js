@@ -1,39 +1,79 @@
 /**
- * @file AnimalNPC.js
- * @description NPC animal que explica el impacto de la contaminación.
- * Etapas 1, 4 y 7. Cambia de textura según la salud del ecosistema.
+ * PLASTIC COLLAPSE - ANIMAL NPC
+ * NPCs animales con comportamiento natural
  */
 
-import NPC from './NPC.js';
-import { DEPTHS } from '../utils/Constants.js';
+class AnimalNPC extends NPC {
+    constructor(scene, x, y, animalType = 'bird') {
+        super(scene, x, y, 'animal');
+        this.animalType = animalType;
+        this.health = 100;
+        this.stage = GAME_STATE.currentStage;
+        this.moveInterval = Phaser.Math.Between(1000, 3000); // Más activos
+    }
 
-export class AnimalNPC extends NPC {
-  constructor(scene, config) {
-    super(scene, {
-      depth: DEPTHS.NPC_BELOW,
-      ...config,
-    });
+    /**
+     * Actualizar animal según etapa (enfermedad progresiva)
+     */
+    update() {
+        super.update();
 
-    // Movimiento de patrulla simple (sólo en animales sanos de etapa 1)
-    this._patrolling  = config.patrol ?? false;
-    this._patrolSpeed = 30;
-    this._patrolDir   = 1;
-    this._patrolRange = config.patrolRange ?? 60;
-    this._patrolOriginX = config.x;
-  }
+        const currentStage = GAME_STATE.currentStage;
+        if (currentStage !== this.stage) {
+            this.updateHealth(currentStage);
+            this.stage = currentStage;
+        }
+    }
 
-  /**
-   * Actualizar patrulla simple si está activa.
-   * Llamar desde la escena en update().
-   */
-  update() {
-    if (!this._patrolling) return;
+    /**
+     * Actualizar salud del animal
+     * @param {number} stage
+     */
+    updateHealth(stage) {
+        // La salud empeora con cada etapa
+        this.health = Math.max(0, 100 - (stage * 12));
 
-    const dx = this.sprite.x - this._patrolOriginX;
-    if (dx > this._patrolRange)  this._patrolDir = -1;
-    if (dx < -this._patrolRange) this._patrolDir =  1;
+        if (this.health > 75) {
+            this.sprite.setTint(0xffffff);
+        } else if (this.health > 50) {
+            this.sprite.setTint(0xffcc99);
+        } else if (this.health > 25) {
+            this.sprite.setTint(0xffaa66);
+        } else {
+            this.sprite.setTint(0xff6666);
+        }
 
-    this.sprite.x += this._patrolDir * this._patrolSpeed * (1 / 60);
-    this.sprite.refreshBody(); // Actualizar hitbox estática
-  }
+        // Si la salud es 0, desaparecer
+        if (this.health <= 0) {
+            this.disappear();
+        }
+    }
+
+    /**
+     * Hacer que el animal desaparezca
+     */
+    disappear() {
+        this.scene.tweens.add({
+            targets: this.sprite,
+            alpha: 0,
+            duration: 2000,
+            ease: 'Linear',
+            onComplete: () => {
+                this.destroy();
+            }
+        });
+    }
+
+    /**
+     * Obtener diálogo según tipo de animal
+     * @returns {string}
+     */
+    getDialogue() {
+        // Los animales no hablan, pero pueden tener sonidos/reacciones
+        return null;
+    }
+}
+
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = AnimalNPC;
 }
