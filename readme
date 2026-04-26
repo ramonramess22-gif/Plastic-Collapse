@@ -1,0 +1,203 @@
+# Plastic Collapse
+
+Juego narrativo de exploración educativo sobre el impacto ambiental y social
+de la industria plástica. Inspirado en Animal Crossing (exploración libre)
+y Pokémon (entrada/salida de lugares).
+
+---
+
+## Inicio rápido
+
+```bash
+# Opción A — servidor local Python (recomendado)
+python3 -m http.server 8080
+# Abrir: http://localhost:8080
+
+# Opción B — extensión Live Server en VS Code
+# Click derecho en index.html → "Open with Live Server"
+
+# Opción C — npx serve
+npx serve .
+```
+
+> **IMPORTANTE:** El juego requiere un servidor HTTP local porque usa
+> ES6 modules (`type="module"`). No se puede abrir `index.html`
+> directamente desde el sistema de archivos (`file://`).
+
+---
+
+## Estructura del proyecto
+
+```
+plastic-collapse/
+├── index.html                    ← Punto de entrada
+├── styles/
+│   └── main.css                  ← Estilos globales
+├── src/
+│   ├── main.js                   ← Bootstrap de Phaser
+│   ├── config/
+│   │   └── GameConfig.js         ← Config Phaser + registro de escenas
+│   ├── scenes/
+│   │   ├── BootScene.js          ← Splash inicial
+│   │   ├── PreloadScene.js       ← Carga de assets
+│   │   ├── MainMenuScene.js      ← Menú principal
+│   │   ├── BaseStageScene.js     ← Clase base para todas las etapas
+│   │   ├── Stage1_NaturalWorld.js
+│   │   ├── Stage2_Factory.js
+│   │   ├── Stage3_Warning.js
+│   │   ├── Stage4_Consequences.js
+│   │   ├── Stage5_SocialImpact.js
+│   │   ├── Stage6_War.js
+│   │   ├── Stage7_Animals.js
+│   │   ├── Stage8_FinalWorld.js
+│   │   └── EndScene.js
+│   ├── systems/
+│   │   ├── EventBus.js           ← Pub/Sub entre módulos
+│   │   ├── GameState.js          ← Variables: economía, contaminación...
+│   │   ├── SaveSystem.js         ← localStorage (seguro, con allowlist)
+│   │   ├── HUDManager.js         ← Actualiza barras DOM del HUD
+│   │   ├── DialogueSystem.js     ← Diálogos con typewriter (rAF)
+│   │   └── TransitionManager.js  ← Fade entre escenas
+│   ├── entities/
+│   │   ├── Player.js             ← Jugador top-down
+│   │   ├── NPC.js                ← Clase base NPC
+│   │   ├── Scientist.js
+│   │   ├── Businessman.js
+│   │   ├── AnimalNPC.js
+│   │   └── EnvironmentObject.js
+│   ├── ui/
+│   │   ├── HUD.js                ← Efectos canvas (flash, deltas)
+│   │   ├── DialogueBox.js        ← Audio del diálogo
+│   │   ├── MainMenu.js           ← Constructor DOM del menú
+│   │   └── EndScreen.js          ← Constructor DOM de pantalla final
+│   ├── utils/
+│   │   ├── Constants.js          ← Constantes globales (Object.freeze)
+│   │   ├── ColorPalette.js       ← Paletas por etapa
+│   │   ├── AssetLoader.js        ← Registro de assets + animaciones
+│   │   └── TweenHelper.js        ← Animaciones reutilizables
+│   └── data/
+│       ├── dialogues.js          ← Todos los textos del juego
+│       ├── stageData.js          ← Config narrativa de cada etapa
+│       └── spriteManifest.js     ← Registro documental de sprites
+├── assets/
+│   ├── sprites/                  ← Spritesheets PNG
+│   ├── tilesets/                 ← Tilesets PNG
+│   ├── tilemaps/                 ← Mapas JSON (formato Tiled)
+│   ├── audio/                    ← Música .ogg + SFX .ogg
+│   └── fonts/                    ← pixel_font.ttf (opcional)
+```
+
+---
+
+## Controles del jugador
+
+| Tecla           | Acción                        |
+|-----------------|-------------------------------|
+| WASD / Flechas  | Mover al jugador               |
+| E               | Interactuar con NPC / avanzar diálogo |
+| ESPACIO         | Avanzar diálogo / skip texto   |
+| ESC             | (Reservado para menú de pausa) |
+
+---
+
+## Variables del sistema
+
+Las 4 variables se actualizan durante el juego y se reflejan en el HUD:
+
+| Variable       | Inicio | Final  | Significado                       |
+|----------------|--------|--------|-----------------------------------|
+| economía       | 100    | ~5     | Salud económica global            |
+| contaminación  | 0      | ~95    | Nivel acumulado de toxinas        |
+| biodiversidad  | 100    | ~5     | Riqueza de especies/ecosistemas   |
+| salud_humana   | 100    | ~10    | Bienestar de la población         |
+
+---
+
+## Etapas narrativas
+
+| Etapa | Escena               | Paleta        | Tema central                      |
+|-------|----------------------|---------------|-----------------------------------|
+| 1     | Stage1_NaturalWorld  | Verde bosque  | Ecosistema sano, fauna abundante  |
+| 2     | Stage2_Factory       | Marrón ind.   | Extracción, producción de plástico|
+| 3     | Stage3_Warning       | Azul oscuro   | Científico vs empresarios         |
+| 4     | Stage4_Consequences  | Naranja quem. | Colapso ambiental / biológico     |
+| 5     | Stage5_SocialImpact  | Rojo oscuro   | Precariedad, revueltas            |
+| 6     | Stage6_War           | Negro         | Guerra, ciudades destruidas       |
+| 7     | Stage7_Animals       | Verde tenue   | Animales narran el daño           |
+| 8     | Stage8_FinalWorld    | Casi negro    | Colapso total                     |
+| FIN   | EndScene             | Negro         | "Si no hay cambios..."            |
+
+---
+
+## Agregar sprites finales
+
+Los sprites incluidos son **placeholders funcionales** en pixel art simple.
+Para reemplazarlos con arte final:
+
+1. Crear el sprite con las dimensiones exactas del `spriteManifest.js`
+2. Guardar en la ruta correspondiente en `assets/sprites/`
+3. El juego los cargará automáticamente (misma clave de asset)
+
+**Herramientas recomendadas:** Aseprite, LibreSprite, Piskel
+
+---
+
+## Agregar audio
+
+El juego espera archivos `.ogg` en:
+- `assets/audio/music/` — 6 pistas de música (una por etapa/grupo)
+- `assets/audio/sfx/`  — 5 efectos de sonido
+
+Si los archivos no existen, el juego funciona en silencio (sin errores).
+
+**Herramientas:** Audacity, LMMS, BeepBox (para música chiptune)
+
+---
+
+## Arquitectura modular (ES6)
+
+```
+index.html
+  └── <script type="module" src="./src/main.js">
+        ├── HUDManager.init()          // Conectar DOM con EventBus
+        └── new Phaser.Game(config)
+              └── BootScene → PreloadScene → MainMenuScene
+                    └── Stage1 → Stage2 → ... → Stage8 → EndScene
+
+FLUJO DE DATOS:
+  Escena → GameState.modifyStat()
+         → EventBus.emit(EVENTS.STAT_UPDATE)
+         → HUDManager.onStatUpdate()
+         → DOM: #bar-economia style.width = value+'%'
+```
+
+---
+
+## Seguridad (CSP strict compatible)
+
+El proyecto cumple con `Content-Security-Policy: default-src 'self'`:
+
+- ❌ Sin `eval()`
+- ❌ Sin `new Function()`
+- ❌ Sin `setTimeout(string, ms)` ni `setInterval(string, ms)`
+- ❌ Sin `innerHTML` con datos de usuario (siempre `textContent`)
+- ✅ `setTimeout(fn, ms)` — función flecha (siempre)
+- ✅ `requestAnimationFrame(fn)` — para el typewriter de diálogos
+- ✅ `JSON.parse()` con validación de schema (SaveSystem)
+- ✅ Acceso a objetos por claves estáticas (nunca por input del usuario)
+
+---
+
+## Dependencias
+
+| Librería    | Versión  | Carga         |
+|-------------|----------|---------------|
+| Phaser.js   | 3.87.0   | CDN jsDelivr  |
+
+Sin npm, sin bundler, sin transpilación. Funciona directamente en el navegador.
+
+---
+
+## Licencia
+
+MIT — libre para uso educativo y modificación.

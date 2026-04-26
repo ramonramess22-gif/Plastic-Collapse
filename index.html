@@ -1,1 +1,45 @@
-
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Plastic Collapse - Una experiencia narrativa sobre el colapso ambiental">
+    <title>Plastic Collapse</title>
+    
+    <!-- Phaser 3 Framework -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/phaser/3.55.2/phaser.min.js"></script>
+    
+    <!-- Estilos -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Contenedor del juego -->
+    <div id="game-container"></div>
+    
+    <!-- Scripts en ORDEN CORRECTO DE DEPENDENCIAS -->
+    
+    <!-- NIVEL 1: Configuración base (sin dependencias) -->
+    <script src="js/config.js"></script>
+    
+    <!-- NIVEL 2: Constantes (depende de config.js) -->
+    <script src="js/constants.js"></script>
+    
+    <!-- NIVEL 3: Utilidades (dependen de config.js) -->
+    <script src="js/assetLoader.js"></script>
+    <script src="js/worldState.js"></script>
+    <script src="js/mapGenerator.js"></script>
+    
+    <!-- NIVEL 4: Clases de entidades (dependen de config.js) -->
+    <script src="js/player.js"></script>
+    <script src="js/npc.js"></script>
+    <script src="js/dialogue.js"></script>
+    
+    <!-- NIVEL 5: Escenas (dependen de todo lo anterior) -->
+    <script src="js/scenes/BootScene.js"></script>
+    <script src="js/scenes/PreloadScene.js"></script>
+    <script src="js/scenes/MainScene.js"></script>
+    
+    <!-- NIVEL 6: Inicializador principal (último) -->
+    <script src="main.js"></script>
+</body>
+</html>
