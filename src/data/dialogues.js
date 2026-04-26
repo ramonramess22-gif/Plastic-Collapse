@@ -1,198 +1,153 @@
 /**
- * @file dialogues.js
- * @description Todos los textos de diálogo del juego Plastic Collapse.
- *
+ * PLASTIC COLLAPSE - DIALOGUES
+ * ========================================
+ * AQUÍ EDITAS TODOS LOS DIÁLOGOS DEL JUEGO
+ * ========================================
+ * 
  * ESTRUCTURA:
- *   DIALOGUES.<personaje>.<etapa> = string[]
- *
- * SEGURIDAD:
- *   - Objeto completamente estático: sólo literales de string.
- *   - Object.freeze() en todos los niveles.
- *   - Sin código ejecutable, sin eval(), sin interpolación dinámica.
- *   - HUDManager usa textContent para renderizar estos textos — nunca innerHTML.
- *
- * USO:
- *   import { DIALOGUES } from '../data/dialogues.js';
- *   DialogueSystem.start('Dr. García', DIALOGUES.scientist.stage3_warning);
+ * -----------
+ * const DIALOGUES = {
+ *   'dialogue_id': {
+ *       npc: 'Nombre del NPC',
+ *       pages: [
+ *           { text: 'Primera página del diálogo' },
+ *           { text: 'Segunda página del diálogo' },
+ *           { text: '...' }
+ *       ]
+ *   }
+ * };
+ * 
+ * CÓMO ASIGNAR A UN NPC:
+ * ----------------------
+ * En la clase NPC, en el método initialize():
+ *   this.dialogueKey = 'dialogue_id';
+ * 
+ * CÓMO LLAMAR EL DIÁLOGO:
+ * -----------------------
+ * dialogueSystem.startDialogue(npcId, 'dialogue_id');
  */
 
-// ─── CIENTÍFICO / ECÓLOGO ─────────────────────────────────────────────────────
+const DIALOGUES = {
+    // ETAPA 1: Mundo Natural
+    'stage1_npc_welcome': {
+        npc: 'Guardabosques',
+        pages: [
+            { text: 'Bienvenido. Este bosque ha sido nuestro hogar durante siglos. La naturaleza prospera aquí, en perfecto equilibrio.' },
+            { text: '¿Ves esos árboles? Son viejos, sabios. El agua está limpia, los animales pacen en paz.' },
+            { text: 'Disfruta de este momento. El mundo así es hermoso.' }
+        ]
+    },
 
-const SCIENTIST_DIALOGUES = Object.freeze({
+    'stage1_npc_animal': {
+        npc: 'Observador de Fauna',
+        pages: [
+            { text: 'Mira cómo los pájaros cantan sin preocupación. Los ciervos beben del río con libertad.' },
+            { text: 'La vida aquí es simple y perfecta. Cada criatura conoce su lugar en el ciclo.' }
+        ]
+    },
 
-  /** Etapa 3: Advierte a los empresarios sobre el daño del plástico */
-  stage3_warning_intro: Object.freeze([
-    'Dr. García: Necesito que me escuchen. Llevamos diez años de investigación.',
-    'Dr. García: Los químicos usados en la producción de plástico son disruptores endocrinos.',
-    'Dr. García: Interfieren con el sistema hormonal de todos los organismos vivos.',
-    'Dr. García: Los microplásticos ya están en el agua que bebemos. En el aire que respiramos.',
-    'Dr. García: Si no detenemos esto ahora, las consecuencias serán irreversibles.',
-  ]),
+    // ETAPA 2: Fábrica
+    'stage2_npc_factory': {
+        npc: 'Capataz de Fábrica',
+        pages: [
+            { text: 'Bienvenido a la nueva era. Esta fábrica traerá progreso, empleo, modernidad.' },
+            { text: 'Sí, hay algo de humo. Pero mira cuánta gente hay trabajando. ¿No es esto lo que queremos?' },
+            { text: 'Un poco de sacrificio ambiental por el bien del pueblo. Es un precio justo.' }
+        ]
+    },
 
-  stage3_warning_detail: Object.freeze([
-    'Dr. García: Los bifenilos policlorados persisten en el ambiente por siglos.',
-    'Dr. García: Hemos documentado deterioro cognitivo en poblaciones cercanas a las plantas.',
-    'Dr. García: Los ecosistemas acuáticos están colapsando. La cadena trófica se rompe.',
-    'Dr. García: Exijo que detengan la producción inmediatamente.',
-  ]),
+    'stage2_npc_worried': {
+        npc: 'Ciudadano Preocupado',
+        pages: [
+            { text: 'No me gusta esto... El bosque está cambiando. Los pájaros ya no cantan como antes.' },
+            { text: 'Dicen que es "progreso", pero yo siento que algo está mal.' }
+        ]
+    },
 
-  stage3_ignored: Object.freeze([
-    'Dr. García: ¿Por qué no me escuchan? Los datos son irrefutables.',
-    'Dr. García: Cada día que pasa es un daño más que no podremos revertir.',
-    'Dr. García: La historia los juzgará. Y la naturaleza ya lo está haciendo.',
-  ]),
+    // ETAPA 3: Advertencia
+    'stage3_npc_scientist': {
+        npc: 'Científico',
+        pages: [
+            { text: 'He estudiado los cambios. Los datos no mienten: contaminación, pérdida de biodiversidad, cambio climático.' },
+            { text: 'Presenté mis hallazgos a los líderes. Esperaba acción. Pero nadie escucha.' },
+            { text: 'Es demasiado incómodo admitir que tenemos un problema.' }
+        ]
+    },
 
-  /** Etapa 7: Habla al jugador sobre lo que fue */
-  stage7_reflection: Object.freeze([
-    'Dr. García: Te advertí. Le advertí a todos.',
-    'Dr. García: Los microplásticos llegaron a cada rincón del planeta.',
-    'Dr. García: Los disruptores endocrinos causaron infertilidad masiva en cientos de especies.',
-    'Dr. García: La sexta extinción no fue un evento geológico. Fue una decisión económica.',
-    'Dr. García: Aún hay vida. Pero el daño tardará mil años en cicatrizar.',
-  ]),
-});
+    'stage3_npc_denier': {
+        npc: 'Político',
+        pages: [
+            { text: 'Las teorías sobre "colapso ambiental" son exageradas. La economía va bien, eso es lo importante.' },
+            { text: 'Siempre ha habido preocupaciones sobre la naturaleza. El mundo está más fuerte que nunca.' },
+            { text: 'No vamos a frenar el progreso por miedo.' }
+        ]
+    },
 
-// ─── EMPRESARIOS ─────────────────────────────────────────────────────────────
+    // ETAPA 4: Consecuencias
+    'stage4_npc_farmer': {
+        npc: 'Granjero',
+        pages: [
+            { text: 'Las cosechas están fallando. El agua que bebo tiene un sabor extraño. Los animales están enfermos.' },
+            { text: 'Esto no es normal. Algo se rompió en la naturaleza.' }
+        ]
+    },
 
-const BUSINESSMAN_DIALOGUES = Object.freeze({
+    'stage4_npc_sick': {
+        npc: 'Persona Enferma',
+        pages: {
+            text: 'Todos enferman aquí ahora. Los niños con asma. La gente mayor con problemas respiratorios. ¿Alguien notó que el aire se oscureció?'
+        }
+    },
 
-  stage3_dismissal_1: Object.freeze([
-    'CEO Vargas: Interesante presentación, doctor.',
-    'CEO Vargas: Pero nuestros abogados han revisado los estudios.',
-    'CEO Vargas: La correlación no implica causalidad.',
-    'CEO Vargas: Gracias por su tiempo. Seguridad lo acompañará a la salida.',
-  ]),
+    // ETAPA 5: Impacto Social
+    'stage5_npc_protester': {
+        npc: 'Activista',
+        pages: [
+            { text: '¡Exigimos cambio! Durante años dijimos que esto pasaría, ¡Y NADIE HIZO NADA!' },
+            { text: 'Ahora es tarde. La gente sufre. Pero algunos aún quieren ignorar la realidad.' },
+            { text: 'Está generando conflicto. Tensión. Ira.' }
+        ]
+    },
 
-  stage3_dismissal_2: Object.freeze([
-    'Director Mora: Llevamos treinta años operando sin problemas.',
-    'Director Mora: Generamos empleos. Pagamos impuestos.',
-    'Director Mora: La producción continúa.',
-  ]),
+    'stage5_npc_businessman': {
+        npc: 'Empresario',
+        pages: [
+            { text: 'Los negocios siguen. Aunque el mundo arda, el dinero encontrará su camino.' },
+            { text: 'No es mi culpa que la gente no se adaptó a tiempo.' }
+        ]
+    },
 
-  stage5_confronted: Object.freeze([
-    'CEO Vargas: ¿Qué quieren los trabajadores ahora?',
-    'CEO Vargas: Sus salarios son competitivos para el sector.',
-    'CEO Vargas: Si no están conformes, hay miles esperando su puesto.',
-  ]),
-});
+    // ETAPA 6: Guerra
+    'stage6_npc_soldier': {
+        npc: 'Soldado',
+        pages: [
+            { text: 'Los recursos escasean. Ahora es guerra. Lucha por agua, alimentos, tierra.' },
+            { text: 'No importa contra quién luches... todos perdemos.' }
+        ]
+    },
 
-// ─── ANIMALES (Etapa 7) ───────────────────────────────────────────────────────
+    // ETAPA 7: Colapso
+    'stage7_npc_survivor': {
+        npc: 'Superviviente',
+        pages: [
+            { text: '...' },
+            { text: 'Ya no hay nada que decir.' }
+        ]
+    },
 
-const ANIMAL_DIALOGUES = Object.freeze({
+    // ETAPA 8: Fin
+    'stage8_reflection': {
+        npc: 'Voz',
+        pages: [
+            { text: 'Mirando atrás... todo era evitable.' },
+            { text: 'Una pequeña decisión. Un poco de progreso. Señales ignoradas.' },
+            { text: 'Avances lógicos que, poco a poco, se convirtieron en colapso irreversible.' },
+            { text: 'No fue el fin del mundo. Fue el fin de una forma de vivir.' },
+            { text: 'Y nosotros fuimos testigos de cada paso hacia el abismo.' }
+        ]
+    }
+};
 
-  deer: Object.freeze([
-    'Ciervo: Mi bosque desapareció en una generación.',
-    'Ciervo: Donde había árboles centenarios, ahora hay tóxicos y silencio.',
-    'Ciervo: Los humanos fragmentaron nuestro hábitat hasta hacerlo inhabitable.',
-    'Ciervo: Mis crías nacen con niveles de plástico en la sangre.',
-  ]),
-
-  bird: Object.freeze([
-    'Pájaro: Solíamos guiarnos por las estrellas para migrar.',
-    'Pájaro: Ahora los campos magnéticos están alterados.',
-    'Pájaro: Los insectos de los que nos alimentamos desaparecieron.',
-    'Pájaro: Sin insectos, no hay polinización. Sin polinización, no hay bosques.',
-    'Pájaro: Sin bosques, no hay nada.',
-  ]),
-
-  fish: Object.freeze([
-    'Pez: El océano ya no es azul. Es gris y tóxico.',
-    'Pez: Comemos microplásticos porque están en todo el plancton.',
-    'Pez: Los químicos de la producción plástica llevan décadas acumulándose.',
-    'Pez: La acidificación del agua disolvió los arrecifes de coral.',
-    'Pez: Sin corales, el noventa por ciento de la vida marina desapareció.',
-  ]),
-
-  bee: Object.freeze([
-    'Abeja: Cuando nosotras morimos, el mundo muere.',
-    'Abeja: Los pesticidas y los disruptores endocrinos atacaron nuestros sistemas.',
-    'Abeja: Sin polinizadores, los cultivos fallaron.',
-    'Abeja: El hambre llegó antes que las guerras. Las guerras vinieron después.',
-  ]),
-});
-
-// ─── TRABAJADORES (Etapa 5) ───────────────────────────────────────────────────
-
-const WORKER_DIALOGUES = Object.freeze({
-
-  precarity: Object.freeze([
-    'Obrero: Llevamos tres turnos sin descanso.',
-    'Obrero: El salario no alcanza para alimentar a mi familia.',
-    'Obrero: Aquí enfermamos. Aquí morimos. Y ellos siguen ganando millones.',
-  ]),
-
-  revolt: Object.freeze([
-    'Obrero: ¡Ya no más! Nos negamos a seguir envenenando el mundo por su beneficio.',
-    'Obrero: Si no nos escuchan en las negociaciones, lo harán en las calles.',
-    'Obrero: No hay trabajo en un planeta muerto.',
-  ]),
-});
-
-// ─── NARRACIÓN DEL JUEGO (voz omnisciente / carteles) ────────────────────────
-
-const NARRATOR_DIALOGUES = Object.freeze({
-
-  stage1_intro: Object.freeze([
-    '[ Este es el mundo como debería ser. ]',
-    '[ Ecosistemas en equilibrio. Fauna abundante. Aire limpio. ]',
-    '[ Pero algo está por cambiar. ]',
-  ]),
-
-  stage2_factory_enter: Object.freeze([
-    '[ Has entrado a la Fábrica Vargas & Mora S.A. ]',
-    '[ El mayor productor de polietileno de la región. ]',
-    '[ Aquí se extrae petróleo, se procesan químicos industriales, ]',
-    '[ y se fabrica el plástico que inunda el mundo. ]',
-  ]),
-
-  stage2_process: Object.freeze([
-    '[ Proceso 1: Extracción de petróleo crudo. ]',
-    '[ Proceso 2: Craqueo catalítico — separación de fracciones. ]',
-    '[ Proceso 3: Polimerización — formación de cadenas plásticas. ]',
-    '[ Proceso 4: Aditivos químicos: plastificantes, estabilizadores, colorantes. ]',
-    '[ Resultado: Millones de toneladas de plástico al año. ]',
-  ]),
-
-  stage4_consequences: Object.freeze([
-    '[ La contaminación superó el umbral de recuperación. ]',
-    '[ Los microplásticos alcanzaron las capas superiores de la atmósfera. ]',
-    '[ El estrés térmico aceleró la microevolución de patógenos. ]',
-    '[ La selección artificial creó organismos resistentes a todo menos al plástico. ]',
-  ]),
-
-  stage6_war_enter: Object.freeze([
-    '[ Cuando los recursos naturales colapsan, ]',
-    '[ las sociedades colapsan con ellos. ]',
-    '[ Lo que empezó como revueltas laborales ]',
-    '[ escaló en un conflicto global por agua, suelo y aire limpio. ]',
-  ]),
-
-  stage8_final: Object.freeze([
-    '[ Biodiversidad: crítica. ]',
-    '[ Ecosistemas funcionales: menos del 12% del planeta. ]',
-    '[ Población humana: en declive acelerado. ]',
-    '[ Concentración de microplásticos en sangre humana: nivel máximo registrado. ]',
-  ]),
-
-  end_message: Object.freeze([
-    '[ Si no hay cambios, este será nuestro futuro. ]',
-    '[ No es ciencia ficción. ]',
-    '[ Es la proyección directa de las tendencias actuales. ]',
-    '[ Aún estás a tiempo de que este mundo sea diferente. ]',
-  ]),
-});
-
-// ─── EXPORT PRINCIPAL ─────────────────────────────────────────────────────────
-
-/**
- * Exportación principal del módulo.
- * Importar así:
- *   import { DIALOGUES } from '../data/dialogues.js';
- */
-export const DIALOGUES = Object.freeze({
-  scientist:  SCIENTIST_DIALOGUES,
-  businessman: BUSINESSMAN_DIALOGUES,
-  animals:    ANIMAL_DIALOGUES,
-  workers:    WORKER_DIALOGUES,
-  narrator:   NARRATOR_DIALOGUES,
-});
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = DIALOGUES;
+}
